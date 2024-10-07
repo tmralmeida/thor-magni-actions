@@ -81,6 +81,16 @@ Change the config `in_path` and `out_path` settings accordingly. In this way, we
    python -m thor_magni_tools.run_preprocessing
    ```
 2. Check your `data/external` directory.
+
+
+## Install packages for thor-magni-actions
+
+Install [miniconda](http://docs.conda.io/en/latest/miniconda.html). Then, you can install all packages required by running:
+
+```
+conda env create -f environment.yml && conda activate thor-magni-actions
+```
+
 3. To compute features, run:
    ```
    python -m thor_magni_actions.features.build_features data/external/thor_magni data/interim/thor_magni

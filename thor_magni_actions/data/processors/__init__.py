@@ -1,0 +1,1 @@
+from .magni import MagniProcessor  # noqa F401

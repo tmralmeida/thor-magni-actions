@@ -1,0 +1,24 @@
+data :
+  features_in : [positions, velocities] # input features to the model # options: [translated_origin, translated_rotated, positions, velocities]
+  features_out : velocities # output features fromt the model # options : translated_origin / translated_rotated / positions / velocities
+  features_trasnsformer_type : standardscaler # options: minmax / standardscaler
+  test : True # testing
+
+
+visual_feature_extractor :
+  use : False
+
+
+hyperparameters : 
+  max_epochs : 250
+  bs : 64 # batch size
+  patience : 20 # wait until no improvement
+  val_freq : 2 # validation frequency
+  lr : 1e-3 # learning rate for the optim more stable training
+  scheduler_patience : 5  # epochs
+  loss_type: mse # [options] mse / soft_dtw
+
+
+save : 
+  checkpoints : 100 # save every object each n epochs, if -1 does not save 
+  path :  logs/prediction_dummy # full_path saving

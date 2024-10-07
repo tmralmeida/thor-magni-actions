@@ -1,0 +1,31 @@
+inherit_from : thor_magni_actions/data_modeling/cfgs/default.yaml
+
+
+model : cond_rnn
+
+
+data :
+  dataset : thor_magni
+  data_dir : data/processed/thor_magni/
+  test_dataset : Scenario_2
+  observation_len : 8 # number of observable time steps
+  prediction_len : 12 # number of predicted time steps
+
+
+network :
+  conditions: 
+    agent_type :
+      use : True
+      name: embedding # [options] embedding / one_hot
+      n_labels: 5  
+      embedding_dim: 16  # if embedding condition
+    action :
+      use : True
+      name: embedding # [options] embedding / one_hot
+      n_labels: 10  
+      embedding_dim: 8  # if embedding condition
+  type : lstm # [options] gru / lstm
+  state : hidden # [options] hidden / cell
+  embedding_dim : 16
+  hidden_dim : 128
+  prediction_len : 12

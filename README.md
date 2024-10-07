@@ -57,9 +57,7 @@ Project Organization
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
 
 
-# Prepare Datasets
-
-## THÖR-MAGNI dataset (via thor-magni-tools)
+## Prepare THÖR-MAGNI dataset (via thor-magni-tools)
 
 
 1. Prepare [thor-magni-tools](https://github.com/tmralmeida/thor-magni-tools).
@@ -91,6 +89,9 @@ Install [miniconda](http://docs.conda.io/en/latest/miniconda.html). Then, you ca
 conda env create -f environment.yml && conda activate thor-magni-actions
 ```
 
+
+## Running thor-magni-actions
+
 3. To compute features, run:
    ```
    python -m thor_magni_actions.features.build_features data/external/thor_magni data/interim/thor_magni
@@ -98,4 +99,8 @@ conda env create -f environment.yml && conda activate thor-magni-actions
 4. To create a dataset of fixed-length tracklets, run:
     ```
     python -m thor_magni_actions.data.make_dataset thor_magni data/interim/thor_magni data/processed/thor_magni
+    ```
+5. To run one of the models k-fold cross validation:
+    ```
+    python -m thor_magni_actions.data_modeling.runners.k_fold_cv 5 thor_magni_actions/data_modeling/cfgs/thor_magni/mtl_tf.yaml
     ```

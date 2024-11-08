@@ -246,7 +246,7 @@ class TransformerBaseActPred(nn.Module):
         )
 
         self.d_model = cfg["d_model"]
-        input_dims = cfg_cond_act["embedding_dim"]
+        input_dims = cfg_cond_act["embedding_dim"] if self.act_emb_layer else 0
         if input_type:
             input_type = input_type if isinstance(input_type, list) else [input_type]
             input_dims += sum([2 for _ in input_type])

@@ -121,9 +121,8 @@ class AgentSemanticCondRNN(nn.Module):
         )
 
     def _build_condition_info(self, cfg_cond: dict) -> Tuple[int, str, nn.Module]:
-        n_classes, cond_type, emb_layer = 0, None, None
+        n_classes, cond_type, emb_layer = cfg_cond["n_labels"], None, None
         if cfg_cond["use"]:
-            n_classes = cfg_cond["n_labels"]
             cond_type = cfg_cond["name"]
             if cond_type not in ["embedding", "one_hot"]:
                 raise NotImplementedError(cond_type)
@@ -167,7 +166,7 @@ class AgentSemanticCondRNN(nn.Module):
 
     def forward(self, x: dict):
         inputs = torch.cat([_in["scl_obs"] for _in in x["features"].values()], dim=-1)
-        if self.act_classes:
+        if self.act_emb_layer:
             inputs = self.forward_actions_embeddings(x, inputs)
 
         if self.agent_classes:
@@ -231,7 +230,7 @@ class MultiTaskAgentSemanticCondRNN(AgentSemanticCondRNN):
 
     def forward(self, x: dict):
         inputs = torch.cat([_in["scl_obs"] for _in in x["features"].values()], dim=-1)
-        if self.act_classes:
+        if self.act_emb_layer:
             inputs = self.forward_actions_embeddings(x, inputs)
 
         if self.agent_classes:

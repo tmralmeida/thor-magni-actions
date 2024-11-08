@@ -20,7 +20,7 @@ network :
       n_labels: 5  
       embedding_dim: 16  # if embedding condition
     action :
-      use : True # DO NOT CHANGE!
+      use : True 
       name: embedding # [options] embedding / one_hot
       n_labels: 10  
       embedding_dim: 8  # if embedding condition
@@ -33,4 +33,4 @@ network :
 
 
 hyperparameters:
-  weight_act_loss : 0.5 # weight applied to the classification loss
+  weight_act_loss : 1. # weight applied to the classification loss

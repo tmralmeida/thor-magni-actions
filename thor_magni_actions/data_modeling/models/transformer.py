@@ -121,9 +121,8 @@ class AgentSemanticCondTransformerEncMLP(nn.Module):
                 xavier_uniform_(p)
 
     def _build_condition_info(self, cfg_cond: dict) -> Tuple[int, str, nn.Module]:
-        n_classes, cond_type, emb_layer = 0, None, None
+        n_classes, cond_type, emb_layer = cfg_cond["n_labels"], None, None
         if cfg_cond["use"]:
-            n_classes = cfg_cond["n_labels"]
             cond_type = cfg_cond["name"]
             if cond_type not in ["embedding", "one_hot"]:
                 raise NotImplementedError(cond_type)
@@ -167,10 +166,10 @@ class AgentSemanticCondTransformerEncMLP(nn.Module):
 
     def forward(self, x: dict, mask: Optional[torch.Tensor] = None):
         inputs = torch.cat([_in["scl_obs"] for _in in x["features"].values()], dim=-1)
-        if self.act_classes:
+        if self.act_emb_layer:
             inputs = self.forward_actions_embeddings(x, inputs)
 
-        if self.agent_classes:
+        if self.agent_emb_layer:
             agent_labels = self.forward_agent_embeddings(x)
         bs = inputs.size(0)
         x = self.emb_net(inputs)
@@ -211,10 +210,10 @@ class MultiTaskAgentSemanticCondTransformer(AgentSemanticCondTransformerEncMLP):
 
     def forward(self, x: dict, mask: Optional[torch.Tensor] = None):
         inputs = torch.cat([_in["scl_obs"] for _in in x["features"].values()], dim=-1)
-        if self.act_classes:
+        if self.act_emb_layer:
             inputs = self.forward_actions_embeddings(x, inputs)
 
-        if self.agent_classes:
+        if self.agent_emb_layer:
             agent_labels = self.forward_agent_embeddings(x)
         bs = inputs.size(0)
         x = self.emb_net(inputs)

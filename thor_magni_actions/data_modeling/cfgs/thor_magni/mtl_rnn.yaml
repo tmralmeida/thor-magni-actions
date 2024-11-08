@@ -7,7 +7,7 @@ model : mtl_rnn
 data :
   dataset : thor_magni
   data_dir : data/processed/thor_magni/
-  test_dataset : Scenario_2
+  test_dataset : Scenario_3
   observation_len : 8 # number of observable time steps
   prediction_len : 12 # number of predicted time steps
 
@@ -20,7 +20,7 @@ network :
       n_labels: 5  
       embedding_dim: 16  # if embedding condition
     action :
-      use : True # DO NOT CHANGE!
+      use : True 
       name: embedding # [options] embedding / one_hot
       n_labels: 10  
       embedding_dim: 8  # if embedding condition

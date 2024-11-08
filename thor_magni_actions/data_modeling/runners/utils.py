@@ -96,19 +96,13 @@ def get_trainer_objects_kfold_cv(
     val_dl = DataLoader(val_ds, batch_size=hyperparameters_cfg["bs"], shuffle=False)
 
     subdir_model_name = model_name
-    if subdir_model_name.startswith("cond"):
+    if subdir_model_name.startswith("cond") or subdir_model_name.startswith("mtl"):
         subdir_model_name = (
             subdir_model_name
             + ",agent_"
             + str(network_cfg["conditions"]["agent_type"]["use"])
             + ",act_"
             + str(network_cfg["conditions"]["action"]["use"])
-        )
-    if subdir_model_name.startswith("mtl"):
-        subdir_model_name = (
-            subdir_model_name
-            + ",agent_"
-            + str(network_cfg["conditions"]["agent_type"]["use"])
         )
     subdir = os.path.join(subdir_model_name, subdir) if subdir else subdir_model_name
     logger = TensorBoardLogger(save_path, name=subdir, default_hp_metric=False)

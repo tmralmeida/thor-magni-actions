@@ -14,6 +14,7 @@ from pytorch_lightning.callbacks import (
 from thor_magni_actions.data_modeling.models import (
     LightDiscriminativePredictor,
     LightMultiTaskPredictor,
+    LightBaseActPredictor,
 )
 from thor_magni_actions.data_modeling.datasets import (
     DatasetObjects,
@@ -96,7 +97,7 @@ def get_trainer_objects_kfold_cv(
     val_dl = DataLoader(val_ds, batch_size=hyperparameters_cfg["bs"], shuffle=False)
 
     subdir_model_name = model_name
-    if subdir_model_name.startswith("cond") or subdir_model_name.startswith("mtl"):
+    if subdir_model_name.startswith(("cond", "mtl", "base_act_pred")):
         subdir_model_name = (
             subdir_model_name
             + ",agent_"
@@ -104,6 +105,8 @@ def get_trainer_objects_kfold_cv(
             + ",act_"
             + str(network_cfg["conditions"]["action"]["use"])
         )
+        if subdir_model_name.startswith("base_act_pred") and data_cfg["features_in"]:
+            subdir_model_name = subdir_model_name + ",motion_cues"
     subdir = os.path.join(subdir_model_name, subdir) if subdir else subdir_model_name
     logger = TensorBoardLogger(save_path, name=subdir, default_hp_metric=False)
     checkpoint_callback = ModelCheckpoint(
@@ -127,8 +130,17 @@ def get_trainer_objects_kfold_cv(
             visual_feature_cfg=visual_feature_extractor_cfg,
             features_scalers_stats=features_scalers_stats,
         )
-    elif model_name in ["mtl_rnn", "mtl_tf"]:
+    elif model_name.startswith("mtl"):
         lightning_module = LightMultiTaskPredictor(
+            model_name=model_name,
+            data_cfg=data_cfg,
+            network_cfg=network_cfg,
+            hyperparameters_cfg=hyperparameters_cfg,
+            visual_feature_cfg=visual_feature_extractor_cfg,
+            features_scalers_stats=features_scalers_stats,
+        )
+    elif model_name.startswith("base_act_pred"):
+        lightning_module = LightBaseActPredictor(
             model_name=model_name,
             data_cfg=data_cfg,
             network_cfg=network_cfg,

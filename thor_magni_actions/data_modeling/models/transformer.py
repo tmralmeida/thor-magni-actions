@@ -145,9 +145,7 @@ class AgentSemanticCondTransformerEncMLP(nn.Module):
         )
         return agent_labels
 
-    def forward_actions_embeddings(
-        self, x: dict, inputs: torch.Tensor
-    ) -> torch.Tensor:
+    def forward_actions_embeddings(self, x: dict, inputs: torch.Tensor) -> torch.Tensor:
         actions_labels = x["action"]
         seq_len = inputs.shape[1]
         temporal_embeddings = []
@@ -228,3 +226,135 @@ class MultiTaskAgentSemanticCondTransformer(AgentSemanticCondTransformerEncMLP):
         act_pred = self.decoder_actions(hn)
         act_pred = act_pred.view(bs, -1, self.act_classes)
         return traj_pred, act_pred
+
+
+class TransformerBaseActPred(nn.Module):
+    def __init__(
+        self,
+        cfg: dict,
+        input_type: Union[str, List[str]],
+    ) -> None:
+        super().__init__()
+        cfg_cond_agent = cfg["conditions"]["agent_type"]
+        cfg_cond_act = cfg["conditions"]["action"]
+        self.obs_len = cfg["observation_len"]
+        self.agent_classes, self.agent_cond_type, self.agent_emb_layer = (
+            self._build_condition_info(cfg_cond_agent)
+        )
+        self.act_classes, self.act_cond_type, self.act_emb_layer = (
+            self._build_condition_info(cfg_cond_act)
+        )
+
+        self.d_model = cfg["d_model"]
+        input_dims = cfg_cond_act["embedding_dim"]
+        if input_type:
+            input_type = input_type if isinstance(input_type, list) else [input_type]
+            input_dims += sum([2 for _ in input_type])
+
+        self.emb_net = nn.Sequential(
+            nn.Linear(input_dims, self.d_model), nn.Dropout(cfg["dropout"])
+        )
+        self.positional_encoding = PositionalEncoding(d_model=self.d_model)
+        self.transformer_encoder = TransformerEncoder(
+            num_layers=cfg["num_layers"],
+            input_dim=self.d_model,
+            dim_feedforward=2 * self.d_model,
+            num_heads=cfg["num_heads"],
+            dropout=cfg["dropout"],
+        )
+        intermediate_dim = (
+            cfg_cond_agent["embedding_dim"] if self.agent_emb_layer else 0
+        )
+        intermediate_size = (self.d_model + intermediate_dim) // 2
+        self.decoder_actions = nn.Sequential(
+            nn.Linear(
+                (
+                    self.d_model + intermediate_dim
+                    if self.agent_emb_layer
+                    else self.d_model
+                ),
+                intermediate_size,
+            ),
+            nn.Dropout(p=0.1),
+            nn.ReLU(inplace=True),
+            nn.Linear(
+                intermediate_size,
+                self.act_classes * cfg["prediction_len"],
+            ),
+        )
+        self._reset_parameters()
+
+    def _reset_parameters(self):
+        r"""Initiate parameters in the transformer model."""
+        for p in self.parameters():
+            if p.dim() > 1:
+                xavier_uniform_(p)
+
+    def _build_condition_info(self, cfg_cond: dict) -> Tuple[int, str, nn.Module]:
+        n_classes, cond_type, emb_layer = cfg_cond["n_labels"], None, None
+        if cfg_cond["use"]:
+            cond_type = cfg_cond["name"]
+            if cond_type not in ["embedding", "one_hot"]:
+                raise NotImplementedError(cond_type)
+            class_emb_dim = (
+                cfg_cond["embedding_dim"] if cond_type == "embedding" else n_classes
+            )
+            emb_layer = (
+                LatentEmbedding(n_classes, class_emb_dim)
+                if cond_type == "embedding"
+                else None
+            )
+        return n_classes, cond_type, emb_layer
+
+    def forward_agent_embeddings(self, x: dict) -> torch.Tensor:
+        agent_labels = x["agent_type"][:, 0].long()
+        agent_labels = (
+            self.agent_emb_layer(agent_labels)
+            if self.agent_cond_type == "embedding"
+            else F.one_hot(agent_labels, num_classes=self.agent_classes).float()
+        )
+        return agent_labels
+
+    def forward_actions_embeddings(
+        self, x: dict, inputs: Optional[torch.Tensor]
+    ) -> torch.Tensor:
+        actions_labels = x["action"]
+        temporal_embeddings = []
+        for ts in range(self.obs_len):
+            ts_act = actions_labels[:, ts].long()
+            temporal_embeddings += [
+                (
+                    self.act_emb_layer(ts_act)
+                    if self.act_cond_type == "embedding"
+                    else F.one_hot(ts_act, num_classes=self.act_classes).float()
+                )
+            ]
+        temporal_embeddings = torch.stack(temporal_embeddings, dim=1)
+        input_cat = (
+            torch.cat([inputs, temporal_embeddings], dim=-1)
+            if inputs is not None
+            else temporal_embeddings
+        )
+        return input_cat
+
+    def forward(self, x: dict, mask: Optional[torch.Tensor] = None):
+        inputs = None
+        if len(x["features"]) > 0:
+            inputs = torch.cat(
+                [_in["scl_obs"] for _in in x["features"].values()], dim=-1
+            )
+        if self.act_emb_layer:
+            inputs = self.forward_actions_embeddings(x, inputs)
+
+        if self.agent_emb_layer:
+            agent_labels = self.forward_agent_embeddings(x)
+        bs = inputs.size(0)
+        x = self.emb_net(inputs)
+        x = self.positional_encoding(x)
+        x = self.transformer_encoder(x, mask=mask)
+        hn = torch.mean(x, dim=1)
+        if self.agent_emb_layer:
+            hn = cat_class_emb(hn, agent_labels)
+        act_pred = self.decoder_actions(hn)
+        act_pred = act_pred.view(bs, -1, self.act_classes)
+        return act_pred

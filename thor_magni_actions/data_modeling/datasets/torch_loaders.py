@@ -134,7 +134,9 @@ class DatasetObjects:
         return features_in
 
     def load_dataset(self):
-        features_in = self.create_input_features()
+        features_in = {}
+        if self.features_names_in:
+            features_in = self.create_input_features()
         self.add_metadata(features_in)
 
         dataset_handler = {
@@ -176,7 +178,7 @@ class DatasetFromPath:
 class DeepLearningDataset(Dataset):
     """Default dataset loader object"""
 
-    def __init__(self, input_data: dict, features_names: List[str]) -> None:
+    def __init__(self, input_data: dict, features_names: Optional[List[str]]) -> None:
         super().__init__()
         self.features_names = features_names
         self.input_data = input_data
@@ -186,19 +188,20 @@ class DeepLearningDataset(Dataset):
 
     def get_common_inputs(self, index):
         out_inputs = {"features": {}}
-        for feature_name in self.features_names:
-            feat_vals = {
-                feat_type: self.input_data[feature_name][feat_type][index]
-                for feat_type in self.input_data[feature_name].keys()
-            }
-            out_inputs["features"].update({feature_name: feat_vals})
-        out_inputs.update(
-            dict(
-                gt_obs=self.input_data["gt_obs"][index],
-                gt_pred=self.input_data["gt_pred"][index],
-                delta_time=self.input_data["delta_time"][index],
+        if self.features_names:
+            for feature_name in self.features_names:
+                feat_vals = {
+                    feat_type: self.input_data[feature_name][feat_type][index]
+                    for feat_type in self.input_data[feature_name].keys()
+                }
+                out_inputs["features"].update({feature_name: feat_vals})
+            out_inputs.update(
+                dict(
+                    gt_obs=self.input_data["gt_obs"][index],
+                    gt_pred=self.input_data["gt_pred"][index],
+                    delta_time=self.input_data["delta_time"][index],
+                )
             )
-        )
         if "agent_type" in self.input_data:
             out_inputs.update(agent_type=self.input_data["agent_type"][index])
         if "action" in self.input_data:
@@ -209,7 +212,7 @@ class DeepLearningDataset(Dataset):
         return self.get_common_inputs(index)
 
     def __len__(self):
-        return len(self.input_data["gt_obs"])
+        return len(self.input_data["dataset_name"])
 
 
 class MAGNIDataset(DeepLearningDataset):

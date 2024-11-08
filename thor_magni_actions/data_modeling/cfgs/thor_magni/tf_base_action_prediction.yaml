@@ -1,0 +1,33 @@
+inherit_from : thor_magni_actions/data_modeling/cfgs/default.yaml
+
+
+model : base_act_pred_tf
+
+
+data :
+  dataset : thor_magni
+  data_dir : data/processed/thor_magni/
+  test_dataset : Scenario_3
+  observation_len : &obs_len_anchor 8 # number of observable time steps
+  prediction_len : &pred_len_anchor 12 # number of predicted time steps
+  features_in : [positions, velocities] # options null / [positions, velocities]
+
+
+network : 
+  observation_len : *obs_len_anchor
+  prediction_len : *pred_len_anchor
+  d_model : 64
+  num_heads : 4
+  num_layers : 1
+  dropout : 0.1
+  conditions: 
+    agent_type :
+      use : True
+      name: embedding # [options] embedding / one_hot
+      n_labels: 5  
+      embedding_dim: 16  # if embedding condition
+    action :
+      use : True 
+      name: embedding # [options] embedding / one_hot
+      n_labels: 10  
+      embedding_dim: 8  # if embedding condition

@@ -18,8 +18,14 @@ from .transformer import (
     TransformerEncMLP,
     AgentSemanticCondTransformerEncMLP,
     MultiTaskAgentSemanticCondTransformer,
+    TransformerBaseActPred,
 )
-from .lstm import RecurrentNetwork, AgentSemanticCondRNN, MultiTaskAgentSemanticCondRNN
+from .lstm import (
+    RecurrentNetwork,
+    AgentSemanticCondRNN,
+    MultiTaskAgentSemanticCondRNN,
+    RecurrentBaseActPred,
+)
 
 
 class LightDiscriminativePredictor(pl.LightningModule):
@@ -470,10 +476,12 @@ class LightMultiTaskPredictor(pl.LightningModule):
             for ts in range(seq_len):
                 cl_idx = action_lbl[ts]
                 self.metrics_per_class[f"accuracy_c{cl_idx.item()}"].update(
-                    preds=act_pred_v[ts].unsqueeze(dim=0), target=cl_idx.unsqueeze(dim=0)
+                    preds=act_pred_v[ts].unsqueeze(dim=0),
+                    target=cl_idx.unsqueeze(dim=0),
                 )
                 self.metrics_per_class[f"f1_score_c{cl_idx.item()}"].update(
-                    preds=act_pred_v[ts].unsqueeze(dim=0), target=cl_idx.unsqueeze(dim=0)
+                    preds=act_pred_v[ts].unsqueeze(dim=0),
+                    target=cl_idx.unsqueeze(dim=0),
                 )
 
     def compute_metrics(self) -> dict:
@@ -530,3 +538,199 @@ class LightMultiTaskPredictor(pl.LightningModule):
             scaled_prediction=traj_pred, batch=batch
         )
         return traj_pred_gt, traj_pred_unscaled, act_pred_gt, act_pred
+
+
+class LightBaseActPredictor(pl.LightningModule):
+    """LSTM, GRU, and Transformers baseline action predictors lightning modules"""
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__()
+        model_name = kwargs["model_name"]
+        data_cfg = kwargs["data_cfg"]
+        network_cfg = kwargs["network_cfg"]
+        hyperparameters_cfg = kwargs["hyperparameters_cfg"]
+        visual_feature_cfg = kwargs["visual_feature_cfg"]
+        features_scalers_stats = kwargs["features_scalers_stats"]
+        saved_hyperparams = dict(
+            model_name=model_name,
+            data_cfg=data_cfg,
+            network_cfg=network_cfg,
+            hyperparameters_cfg=hyperparameters_cfg,
+            visual_feature_cfg=visual_feature_cfg,
+            features_scalers_stats=features_scalers_stats,
+        )
+        self.save_hyperparameters(saved_hyperparams)
+        features_in = data_cfg["features_in"]
+        if model_name.endswith("tf"):
+            self.model = TransformerBaseActPred(
+                cfg=network_cfg,
+                input_type=features_in,
+            )
+        elif model_name.endswith("rnn"):
+            self.model = RecurrentBaseActPred(cfg=network_cfg, input_type=features_in)
+        else:
+            raise NotImplementedError(model_name)
+        self.hyperparameters_cfg = hyperparameters_cfg
+        self.act_loss = nn.CrossEntropyLoss()
+        self.metrics_per_class = (
+            {} if data_cfg["dataset"] in ["synthetic", "thor_magni"] else None
+        )
+        if self.metrics_per_class is not None:
+            self.actions_mapping = data_cfg["actions"]
+            self.n_actions = max(self.actions_mapping.values()) + 1
+
+    def forward(self, x):
+        act_pred = self.model(x)
+        return act_pred
+
+    def configure_optimizers(self):
+        opt = optim.Adam(
+            self.parameters(),
+            lr=float(self.hyperparameters_cfg["lr"]),
+            weight_decay=1e-4,
+        )
+        lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+            opt, patience=self.hyperparameters_cfg["scheduler_patience"], min_lr=1e-6
+        )
+        return [opt], [
+            dict(scheduler=lr_scheduler, interval="epoch", monitor="train_loss")
+        ]
+
+    def training_step(self, train_batch: dict, batch_idx: int) -> torch.Tensor:
+        act_gt, act_pred = self.common_step(train_batch)
+        act_loss = self.act_loss(
+            act_pred.contiguous().view(-1, act_pred.size(-1)),
+            act_gt.contiguous().view(-1),
+        ).mean()
+        self.log_dict(dict(train_loss=act_loss), on_epoch=True, prog_bar=True)
+        return act_loss
+
+    def validation_step(self, val_batch: dict, batch_idx: int) -> torch.Tensor:
+        act_gt, act_pred = self.common_step(val_batch)
+        act_loss = self.act_loss(
+            act_pred.contiguous().view(-1, act_pred.size(-1)),
+            act_gt.contiguous().view(-1),
+        ).mean()
+        act_pred = torch.nn.functional.softmax(act_pred, dim=-1)
+        self.update_metrics(act_pred, act_gt)
+        self.log_dict(dict(val_loss=act_loss), on_epoch=True, prog_bar=True)
+
+    def test_step(self, test_batch: dict, batch_idx: int) -> torch.Tensor:
+        act_gt, act_pred = self.common_step(test_batch)
+        act_pred = torch.nn.functional.softmax(act_pred, dim=-1)
+        self.update_metrics(act_pred, act_gt)
+        if self.metrics_per_class is not None:
+            self.update_metrics_per_class(
+                act_pred=act_pred,
+                act_gt=act_gt,
+            )
+
+    def on_validation_start(self) -> None:
+        self.eval_metrics = dict(
+            accuracy=Accuracy(
+                task="multiclass",
+                num_classes=self.n_actions,
+                average="micro",
+            ),
+            f1_score=F1Score(
+                task="multiclass",
+                num_classes=self.n_actions,
+                average="weighted",
+            ),
+        )
+
+    def on_validation_end(self) -> None:
+        save_path = os.path.join(self.logger.log_dir, "val_metrics.json")
+        val_metrics = self.compute_metrics()
+        dump_json_file(val_metrics, save_path)
+        self.reset_metrics()
+
+    def on_test_start(self) -> None:
+        self.eval_metrics = dict(
+            accuracy=Accuracy(
+                task="multiclass",
+                num_classes=self.n_actions,
+                average="micro",
+            ),
+            f1_score=F1Score(
+                task="multiclass",
+                num_classes=self.n_actions,
+                average="weighted",
+            ),
+        )
+        for i in range(self.n_actions):
+            self.metrics_per_class[f"accuracy_c{i}"] = Accuracy(
+                task="multiclass",
+                num_classes=self.n_actions,
+                average="micro",
+            ).to(self.device)
+            self.metrics_per_class[f"f1_score_c{i}"] = F1Score(
+                task="multiclass",
+                num_classes=self.n_actions,
+                average="weighted",
+            ).to(self.device)
+
+    def on_test_end(self) -> None:
+        save_path = os.path.join(self.logger.log_dir, "test_metrics.json")
+        eval_metrics = self.compute_metrics()
+        if hasattr(self, "actions_mapping"):
+            eval_metrics.update(self.actions_mapping)
+        dump_json_file(eval_metrics, save_path)
+        self.reset_metrics()
+
+    def predict_step(self, predict_batch: dict, batch_idx: int) -> torch.Tensor:
+        act_gt, act_pred = self.common_step(predict_batch)
+        act_pred = torch.nn.functional.softmax(act_pred, dim=-1)
+        return act_gt, act_pred
+
+    def update_metrics(
+        self,
+        act_pred: torch.Tensor,
+        act_gt: torch.Tensor,
+    ):
+        act_pred_v = act_pred.contiguous().view(-1, act_pred.size(-1))
+        act_gt_v = act_gt.contiguous().view(-1)
+        self.eval_metrics["accuracy"].update(preds=act_pred_v, target=act_gt_v)
+        self.eval_metrics["f1_score"].update(preds=act_pred_v, target=act_gt_v)
+
+    def update_metrics_per_class(
+        self,
+        act_pred: torch.Tensor,
+        act_gt: torch.Tensor,
+    ) -> torch.Tensor:
+        for i, action_lbl in enumerate(act_gt):
+            act_pred_v = act_pred[i]  # ts, n_acts
+            seq_len = action_lbl.shape[0]  # ts
+            for ts in range(seq_len):
+                cl_idx = action_lbl[ts]
+                self.metrics_per_class[f"accuracy_c{cl_idx.item()}"].update(
+                    preds=act_pred_v[ts].unsqueeze(dim=0),
+                    target=cl_idx.unsqueeze(dim=0),
+                )
+                self.metrics_per_class[f"f1_score_c{cl_idx.item()}"].update(
+                    preds=act_pred_v[ts].unsqueeze(dim=0),
+                    target=cl_idx.unsqueeze(dim=0),
+                )
+
+    def compute_metrics(self) -> dict:
+        final_metrics = {
+            met_name: met.compute().item()
+            for met_name, met in self.eval_metrics.items()
+        }
+        final_act_metrics = {
+            met_name: met.compute().item()
+            for met_name, met in self.metrics_per_class.items()
+        }
+        final_metrics.update(final_act_metrics)
+        return final_metrics
+
+    def reset_metrics(self) -> None:
+        for _, metric in self.eval_metrics.items():
+            metric.reset()
+        for _, metric in self.metrics_per_class.items():
+            metric.reset()
+
+    def common_step(self, batch: dict):
+        act_gt = batch["action"][:, self.model.obs_len:].long()
+        act_pred = self(batch)
+        return act_gt, act_pred

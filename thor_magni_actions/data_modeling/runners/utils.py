@@ -12,7 +12,7 @@ from pytorch_lightning.callbacks import (
 )
 
 from thor_magni_actions.data_modeling.models import (
-    LightDiscriminativePredictor,
+    LightTransformerPredictor,
     LightMultiTaskPredictor,
     LightBaseActPredictor,
 )
@@ -20,7 +20,6 @@ from thor_magni_actions.data_modeling.datasets import (
     DatasetObjects,
     get_scalers_stats,
 )
-from thor_magni_actions.io import load_yaml_file
 
 
 def get_trainer_objects_kfold_cv(
@@ -44,13 +43,6 @@ def get_trainer_objects_kfold_cv(
         if test_dataset
         else os.path.join(save_cfg["path"], dataset_name)
     )
-    visual_feature_extractor_cfg = cfg["visual_feature_extractor"]
-    vis_features_cfg = None
-    if visual_feature_extractor_cfg["use"]:
-        vis_features_cfg = load_yaml_file(visual_feature_extractor_cfg["inherit_from"])
-        visuals_path = vis_features_cfg["data_dir"]
-        visual_window_size = vis_features_cfg["window_size"]
-        data_cfg.update(dict(visuals_path=visuals_path, window_size=visual_window_size))
 
     train_trajectories = pd.concat(
         [all_trajectories[train_i] for train_i in train_index]
@@ -121,31 +113,28 @@ def get_trainer_objects_kfold_cv(
     )
     lr_monitor = LearningRateMonitor(logging_interval="step")
     callbacks = [early_stop_callback, checkpoint_callback, lr_monitor]
-    if model_name in ["rnn", "cond_rnn", "tf", "cond_tf"]:
-        lightning_module = LightDiscriminativePredictor(
+    if model_name in ["tf", "cond_tf"]:
+        lightning_module = LightTransformerPredictor(
             model_name=model_name,
             data_cfg=data_cfg,
             network_cfg=network_cfg,
             hyperparameters_cfg=hyperparameters_cfg,
-            visual_feature_cfg=visual_feature_extractor_cfg,
             features_scalers_stats=features_scalers_stats,
         )
-    elif model_name.startswith("mtl"):
+    elif model_name == "mtl_tf":
         lightning_module = LightMultiTaskPredictor(
             model_name=model_name,
             data_cfg=data_cfg,
             network_cfg=network_cfg,
             hyperparameters_cfg=hyperparameters_cfg,
-            visual_feature_cfg=visual_feature_extractor_cfg,
             features_scalers_stats=features_scalers_stats,
         )
-    elif model_name.startswith("base_act_pred"):
+    elif model_name == "base_act_pred_tf":
         lightning_module = LightBaseActPredictor(
             model_name=model_name,
             data_cfg=data_cfg,
             network_cfg=network_cfg,
             hyperparameters_cfg=hyperparameters_cfg,
-            visual_feature_cfg=visual_feature_extractor_cfg,
             features_scalers_stats=features_scalers_stats,
         )
     else:

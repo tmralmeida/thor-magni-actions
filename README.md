@@ -1,7 +1,11 @@
-thor-magni-actions
-==============================
+<h2 align="center">THÖR-MAGNI Act:&thinsp;A&thinsp;Actions&thinsp;for&thinsp;Human&thinsp;Motion&thinsp;Modeling&thinsp;in&thinsp;Robot-Shared&thinsp;Industrial&thinsp;Spaces</h2>
 
-Actions and motion analysis and modeling in MAGNI dataset.
+<p align="center">
+  <a href="https://arxiv.org/abs/2403.09285"><strong><code>Paper</code></strong></a>
+  <a href="https://github.com/tmralmeida/thor-magni-tools/tree/main"><strong><code>Dataset</code></strong></a>
+  <a href="https://magni-dash.streamlit.app"><strong><code>Dataset Tools</code></strong></a>
+</p>
+
 
 Project Organization
 ------------
@@ -57,6 +61,15 @@ Project Organization
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
 
 
+## Install packages for thor-magni-tools
+
+Install [miniconda](http://docs.conda.io/en/latest/miniconda.html). Then, you can install all packages required by running:
+
+```
+conda env create -f environment.yml && conda activate thor-magni-tools && pip install -e
+```
+
+
 ## Prepare THÖR-MAGNI dataset (via thor-magni-tools)
 
 
@@ -64,7 +77,7 @@ Project Organization
 2. Change [config file](https://github.com/tmralmeida/thor-magni-tools-new/blob/main/thor_magni_tools/preprocessing/cfg.yaml) to:
 ------------
     in_path: PATH_TO_CSVs/Scenario_{ID}
-    out_path: PATH_TO/thor-magni-actions/data/external/thor_magni
+    out_path: PATH_TO/thor-magni-actions/data/external/thor_magni_3d
     preprocessing_type: 3D-best_marker 
     max_nans_interpolate: 100 
 
@@ -80,16 +93,6 @@ Change the config `in_path` and `out_path` settings accordingly. In this way, we
    ```
 2. Check your `data/external` directory.
 
-
-## Install packages for thor-magni-actions
-
-Install [miniconda](http://docs.conda.io/en/latest/miniconda.html). Then, you can install all packages required by running:
-
-```
-conda env create -f environment.yml && conda activate thor-magni-actions
-```
-
-
 ## Running thor-magni-actions
 
 3. To compute features, run:
@@ -100,7 +103,7 @@ conda env create -f environment.yml && conda activate thor-magni-actions
     ```
     python -m thor_magni_actions.data.make_dataset thor_magni data/interim/thor_magni data/processed/thor_magni
     ```
-5. To run one of the models k-fold cross validation:
+5. To run the k-fold cross validation:
     ```
-    python -m thor_magni_actions.data_modeling.runners.k_fold_cv 5 thor_magni_actions/data_modeling/cfgs/thor_magni/mtl_tf.yaml
+    python -m thor_magni_actions.data_modeling.runners.k_fold_cv 5 thor_magni_actions/data_modeling/cfgs/mtl_tf.yaml
     ```

@@ -20,16 +20,10 @@ from .transformer import (
     MultiTaskAgentSemanticCondTransformer,
     TransformerBaseActPred,
 )
-from .lstm import (
-    RecurrentNetwork,
-    AgentSemanticCondRNN,
-    MultiTaskAgentSemanticCondRNN,
-    RecurrentBaseActPred,
-)
 
 
-class LightDiscriminativePredictor(pl.LightningModule):
-    """LSTM, GRU, and Transformers lightning modules"""
+class LightTransformerPredictor(pl.LightningModule):
+    """Transformers lightning modules"""
 
     def __init__(self, **kwargs) -> None:
         super().__init__()
@@ -37,14 +31,12 @@ class LightDiscriminativePredictor(pl.LightningModule):
         data_cfg = kwargs["data_cfg"]
         network_cfg = kwargs["network_cfg"]
         hyperparameters_cfg = kwargs["hyperparameters_cfg"]
-        visual_feature_cfg = kwargs["visual_feature_cfg"]
         features_scalers_stats = kwargs["features_scalers_stats"]
         saved_hyperparams = dict(
             model_name=model_name,
             data_cfg=data_cfg,
             network_cfg=network_cfg,
             hyperparameters_cfg=hyperparameters_cfg,
-            visual_feature_cfg=visual_feature_cfg,
             features_scalers_stats=features_scalers_stats,
         )
         self.save_hyperparameters(saved_hyperparams)
@@ -59,10 +51,6 @@ class LightDiscriminativePredictor(pl.LightningModule):
                 cfg=network_cfg,
                 input_type=features_in,
             )
-        elif model_name == "rnn":
-            self.model = RecurrentNetwork(cfg=network_cfg, input_type=features_in)
-        elif model_name == "cond_rnn":
-            self.model = AgentSemanticCondRNN(cfg=network_cfg, input_type=features_in)
         else:
             raise NotImplementedError(model_name)
         self.hyperparameters_cfg = hyperparameters_cfg
@@ -248,24 +236,18 @@ class LightMultiTaskPredictor(pl.LightningModule):
         data_cfg = kwargs["data_cfg"]
         network_cfg = kwargs["network_cfg"]
         hyperparameters_cfg = kwargs["hyperparameters_cfg"]
-        visual_feature_cfg = kwargs["visual_feature_cfg"]
         features_scalers_stats = kwargs["features_scalers_stats"]
         saved_hyperparams = dict(
             model_name=model_name,
             data_cfg=data_cfg,
             network_cfg=network_cfg,
             hyperparameters_cfg=hyperparameters_cfg,
-            visual_feature_cfg=visual_feature_cfg,
             features_scalers_stats=features_scalers_stats,
         )
         self.save_hyperparameters(saved_hyperparams)
         features_in = data_cfg["features_in"]
         if model_name == "mtl_tf":
             self.model = MultiTaskAgentSemanticCondTransformer(
-                cfg=network_cfg, input_type=features_in
-            )
-        elif model_name == "mtl_rnn":
-            self.model = MultiTaskAgentSemanticCondRNN(
                 cfg=network_cfg, input_type=features_in
             )
         else:
@@ -549,14 +531,12 @@ class LightBaseActPredictor(pl.LightningModule):
         data_cfg = kwargs["data_cfg"]
         network_cfg = kwargs["network_cfg"]
         hyperparameters_cfg = kwargs["hyperparameters_cfg"]
-        visual_feature_cfg = kwargs["visual_feature_cfg"]
         features_scalers_stats = kwargs["features_scalers_stats"]
         saved_hyperparams = dict(
             model_name=model_name,
             data_cfg=data_cfg,
             network_cfg=network_cfg,
             hyperparameters_cfg=hyperparameters_cfg,
-            visual_feature_cfg=visual_feature_cfg,
             features_scalers_stats=features_scalers_stats,
         )
         self.save_hyperparameters(saved_hyperparams)
@@ -566,8 +546,6 @@ class LightBaseActPredictor(pl.LightningModule):
                 cfg=network_cfg,
                 input_type=features_in,
             )
-        elif model_name.endswith("rnn"):
-            self.model = RecurrentBaseActPred(cfg=network_cfg, input_type=features_in)
         else:
             raise NotImplementedError(model_name)
         self.hyperparameters_cfg = hyperparameters_cfg

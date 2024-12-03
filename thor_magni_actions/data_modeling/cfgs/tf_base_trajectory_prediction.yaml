@@ -1,0 +1,23 @@
+inherit_from : thor_magni_actions/data_modeling/cfgs/default.yaml
+
+
+model : tf
+
+
+data :
+  dataset : thor_magni
+  data_dir : data/processed/thor_magni/
+  test_dataset : merged_data
+  observation_len : &obs_len_anchor 8 # number of observable time steps
+  prediction_len : &pred_len_anchor 12 # number of predicted time steps
+
+
+network :
+  d_model : 64
+  num_heads : 4
+  num_layers : 1
+  dropout : 0.1
+  observation_len : *obs_len_anchor
+  prediction_len : *pred_len_anchor
+  
+

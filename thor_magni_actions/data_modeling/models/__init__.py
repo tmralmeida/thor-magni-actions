@@ -1,1 +1,1 @@
-from .lightning import LightDiscriminativePredictor, LightMultiTaskPredictor, LightBaseActPredictor # noqa F402
+from .lightning import LightTransformerPredictor, LightMultiTaskPredictor, LightBaseActPredictor # noqa F402

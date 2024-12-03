@@ -4,8 +4,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.init import xavier_uniform_
 
-from .tf_modules import PositionalEncoding, TransformerEncoder
-from .modules import LatentEmbedding, cat_class_emb
+from .modules import (
+    LatentEmbedding,
+    cat_class_emb,
+    TransformerEncoder,
+    PositionalEncoding,
+)
 
 
 class TransformerEncMLP(nn.Module):
@@ -188,7 +192,7 @@ class MultiTaskAgentSemanticCondTransformer(AgentSemanticCondTransformerEncMLP):
             cfg_cond_agent["embedding_dim"] if self.agent_emb_layer else 0
         )
         intermediate_size = (self.d_model + intermediate_dim) // 2
-        self.decoder_actions = nn.Sequential(
+        self.decoder_activities = nn.Sequential(
             nn.Linear(
                 (
                     self.d_model + intermediate_dim
@@ -223,7 +227,7 @@ class MultiTaskAgentSemanticCondTransformer(AgentSemanticCondTransformerEncMLP):
 
         traj_pred = self.decoder(hn)
         traj_pred = traj_pred.view(bs, -1, 2)
-        act_pred = self.decoder_actions(hn)
+        act_pred = self.decoder_activities(hn)
         act_pred = act_pred.view(bs, -1, self.act_classes)
         return traj_pred, act_pred
 

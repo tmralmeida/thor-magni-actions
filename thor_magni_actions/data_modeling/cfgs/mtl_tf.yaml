@@ -1,15 +1,15 @@
 inherit_from : thor_magni_actions/data_modeling/cfgs/default.yaml
 
 
-model : cond_tf
+model : mtl_tf
 
 
 data :
   dataset : thor_magni
   data_dir : data/processed/thor_magni/
-  test_dataset : Scenario_3
-  observation_len : 8 # number of observable time steps
-  prediction_len : 12 # number of predicted time steps
+  test_dataset : merged_data
+  observation_len : &obs_len_anchor 8 # number of observable time steps
+  prediction_len : &pred_len_anchor 12 # number of predicted time steps
 
 
 network :
@@ -20,7 +20,7 @@ network :
       n_labels: 5  
       embedding_dim: 16  # if embedding condition
     action :
-      use : True
+      use : True 
       name: embedding # [options] embedding / one_hot
       n_labels: 10  
       embedding_dim: 8  # if embedding condition
@@ -28,5 +28,9 @@ network :
   num_heads : 4
   num_layers : 1
   dropout : 0.1
-  observation_len : 8
-  prediction_len : 12
+  observation_len : *obs_len_anchor
+  prediction_len : *pred_len_anchor
+
+
+hyperparameters:
+  weight_act_loss : 1. # weight applied to the classification loss

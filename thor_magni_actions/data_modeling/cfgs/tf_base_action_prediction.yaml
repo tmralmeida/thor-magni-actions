@@ -7,7 +7,7 @@ model : base_act_pred_tf
 data :
   dataset : thor_magni
   data_dir : data/processed/thor_magni/
-  test_dataset : Scenario_3
+  test_dataset : merged_data
   observation_len : &obs_len_anchor 8 # number of observable time steps
   prediction_len : &pred_len_anchor 12 # number of predicted time steps
   features_in : [positions, velocities] # options null / [positions, velocities]

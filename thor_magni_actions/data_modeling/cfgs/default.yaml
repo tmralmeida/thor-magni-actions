@@ -4,11 +4,6 @@ data :
   features_trasnsformer_type : standardscaler # options: minmax / standardscaler
   test : True # testing
 
-
-visual_feature_extractor :
-  use : False
-
-
 hyperparameters : 
   max_epochs : 250
   bs : 64 # batch size
@@ -21,4 +16,4 @@ hyperparameters :
 
 save : 
   checkpoints : 100 # save every object each n epochs, if -1 does not save 
-  path :  logs/prediction_dummy # full_path saving
+  path :  logs/test # full_path saving

@@ -32,7 +32,7 @@ def main(k_folds, cfg_file):
     data_cfg = cfg["data"]
     dataset_name = data_cfg["dataset"]
     model_name = cfg["model"]
-    accelerator = "gpu" if cfg["visual_feature_extractor"]["use"] else "cpu"
+    accelerator = "cpu"
     test_dataset = data_cfg["test_dataset"]
     str_logs = [dataset_name]
     if test_dataset:
@@ -59,37 +59,21 @@ def main(k_folds, cfg_file):
     kf = KFold(n_splits=k_folds)
     new_subdir = f"{new_subdir}/fold" if new_subdir else "fold"
 
-    if accelerator == "cpu":
-        ray.init()
-        trainers = [
-            get_trainer_objects_kfold_cv(
-                input_trajectories,
-                train_index,
-                validation_index,
-                cfg,
-                accelerator,
-                f"{new_subdir}_{i}",
-            )
-            for i, (train_index, validation_index) in enumerate(kf.split(dummy_x))
-        ]
-        logging_paths = ray.get(
-            [ray_run_trainer.remote(tr_options) for tr_options in trainers]
+    ray.init()
+    trainers = [
+        get_trainer_objects_kfold_cv(
+            input_trajectories,
+            train_index,
+            validation_index,
+            cfg,
+            accelerator,
+            f"{new_subdir}_{i}",
         )
-    elif accelerator == "gpu":
-        logging_paths = []
-        for i, (train_index, validation_index) in enumerate(kf.split(dummy_x)):
-            trainer_options = get_trainer_objects_kfold_cv(
-                all_trajectories,
-                train_index,
-                validation_index,
-                cfg,
-                accelerator,
-                f"fold_{i}",
-            )
-            logging_paths.append(run_trainer(trainer_options=trainer_options))
-
-    else:
-        raise ValueError(accelerator)
+        for i, (train_index, validation_index) in enumerate(kf.split(dummy_x))
+    ]
+    logging_paths = ray.get(
+        [ray_run_trainer.remote(tr_options) for tr_options in trainers]
+    )
 
     save_path = os.path.join(os.path.dirname(logging_paths[0]), "n_runs_metrics.json")
     overall_metrics = load_json_file(

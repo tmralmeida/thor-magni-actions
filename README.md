@@ -61,12 +61,12 @@ Project Organization
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
 
 
-## Install packages for thor-magni-tools
+## Install packages for thor-magni-actions
 
 Install [miniconda](http://docs.conda.io/en/latest/miniconda.html). Then, you can install all packages required by running:
 
 ```
-conda env create -f environment.yml && conda activate thor-magni-tools && pip install -e
+conda env create -f environment.yml && conda activate thor-magni-actions && pip install -e
 ```
 
 

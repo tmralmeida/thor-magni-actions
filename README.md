@@ -77,7 +77,7 @@ conda env create -f environment.yml && conda activate thor-magni-actions && pip 
 2. Change [config file](https://github.com/tmralmeida/thor-magni-tools-new/blob/main/thor_magni_tools/preprocessing/cfg.yaml) to:
 ------------
     in_path: PATH_TO_CSVs/Scenario_{ID}
-    out_path: PATH_TO/thor-magni-actions/data/external/thor_magni_3d
+    out_path: PATH_TO/thor-magni-actions/data/external/thor_magni
     preprocessing_type: 3D-best_marker 
     max_nans_interpolate: 100 
 
@@ -92,12 +92,16 @@ Change the config `in_path` and `out_path` settings accordingly. In this way, we
    python -m thor_magni_tools.run_preprocessing
    ```
 2. Check your `data/external` directory.
+3. To align actions and trajectory data, run for each preprocessed scenario directory:
+    ```
+    python -m thor_magni_tools.run_actions_merging --actions_path data/processed/thor_magni/QTM_frames_actions.csv --files_dir outputs/data/thor_magni/Scenario_{ID}/ --out_path data/interim/thor_magni/
+    ```
 
 ## Running thor-magni-actions
 
 3. To compute features, run:
    ```
-   python -m thor_magni_actions.features.build_features data/external/thor_magni data/interim/thor_magni
+   python -m thor_magni_actions.features.build_features data/interim/thor_magni data/interim/thor_magni
    ```
 4. To create a dataset of fixed-length tracklets, run:
     ```

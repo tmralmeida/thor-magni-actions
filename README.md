@@ -100,15 +100,19 @@ Change the config `in_path` and `out_path` settings accordingly. In this way, we
 
 ## Running thor-magni-actions
 
-3. To compute features, run:
+0. If you didn't run the previous preprocessing stage and want to use the data directly, run:
+   ```
+    unzip data/processed/thor_magni/QTM_frames_actions.zip -d data/processed/thor_magni/
+   ```
+1. To compute features, run:
    ```
    python -m thor_magni_actions.features.build_features data/interim/thor_magni data/interim/thor_magni
    ```
-4. To create a dataset of fixed-length tracklets, run:
+2. To create a dataset of fixed-length tracklets, run:
     ```
     python -m thor_magni_actions.data.make_dataset thor_magni data/interim/thor_magni data/processed/thor_magni
     ```
-5. To run the k-fold cross validation:
+3. To run the k-fold cross validation:
     ```
     python -m thor_magni_actions.data_modeling.runners.k_fold_cv 5 thor_magni_actions/data_modeling/cfgs/mtl_tf.yaml
     ```

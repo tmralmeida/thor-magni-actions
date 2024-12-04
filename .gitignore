@@ -80,6 +80,7 @@ data/external/
 data/interim/
 data/processed/synthetic
 data/processed/thor_magni/Scenario*
+data/processed/thor_magni/QTM_frames_actions.csv
 
 # Mac OS-specific storage files
 .DS_Store

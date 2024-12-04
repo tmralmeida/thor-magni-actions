@@ -72,7 +72,7 @@ conda env create -f environment.yml && conda activate thor-magni-actions && pip 
 
 ## Prepare THÖR-MAGNI dataset (via thor-magni-tools)
 
-
+0. Jump to [running thor-magni-actions section](##running-thor-magni-actions) if you want to skip the preprocessing steps.
 1. Prepare [thor-magni-tools](https://github.com/tmralmeida/thor-magni-tools).
 2. Change [config file](https://github.com/tmralmeida/thor-magni-tools-new/blob/main/thor_magni_tools/preprocessing/cfg.yaml) to:
 ------------
@@ -96,6 +96,7 @@ Change the config `in_path` and `out_path` settings accordingly. In this way, we
     ```
     python -m thor_magni_tools.run_actions_merging --actions_path data/processed/thor_magni/QTM_frames_actions.csv --files_dir outputs/data/thor_magni/Scenario_{ID}/ --out_path data/interim/thor_magni/
     ```
+4. To run the Scenario 2 and Scenario 3 merging, run [this notebook](https://github.com/tmralmeida/thor-magni-actions/blob/main/notebooks/2-merge-scenarios-data.ipynb).
 
 ## Running thor-magni-actions
 

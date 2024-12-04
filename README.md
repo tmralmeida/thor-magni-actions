@@ -72,7 +72,7 @@ conda env create -f environment.yml && conda activate thor-magni-actions && pip 
 
 ## Prepare THÖR-MAGNI dataset (via thor-magni-tools)
 
-0. Jump to [running thor-magni-actions section](##running-thormagniactions) if you want to skip the preprocessing steps.
+0. Jump to [running thor-magni-actions section](##running-thor-magni-actions) if you want to skip the preprocessing steps.
 1. Prepare [thor-magni-tools](https://github.com/tmralmeida/thor-magni-tools).
 2. Change [config file](https://github.com/tmralmeida/thor-magni-tools-new/blob/main/thor_magni_tools/preprocessing/cfg.yaml) to:
 ------------

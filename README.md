@@ -72,9 +72,13 @@ conda env create -f environment.yml && conda activate thor-magni-actions && pip 
 
 ## Prepare THÖR-MAGNI dataset (via thor-magni-tools)
 
-0. Jump to [running thor-magni-actions section](#running-thor-magni-actions) if you want to skip the preprocessing steps.
-1. Prepare [thor-magni-tools](https://github.com/tmralmeida/thor-magni-tools).
-2. Change [config file](https://github.com/tmralmeida/thor-magni-tools-new/blob/main/thor_magni_tools/preprocessing/cfg.yaml) to:
+0. If you want to skip all preprocessing steps run: 
+   ```
+    unzip data/processed/thor_magni/QTM_frames_actions.zip -d data/processed/thor_magni/
+   ```
+   And, jump to [running thor-magni-actions section](#running-thor-magni-actions) .
+2. Prepare [thor-magni-tools](https://github.com/tmralmeida/thor-magni-tools).
+3. Change [config file](https://github.com/tmralmeida/thor-magni-tools-new/blob/main/thor_magni_tools/preprocessing/cfg.yaml) to:
 ------------
     in_path: PATH_TO_CSVs/Scenario_{ID}
     out_path: PATH_TO/thor-magni-actions/data/external/thor_magni
@@ -100,19 +104,15 @@ Change the config `in_path` and `out_path` settings accordingly. In this way, we
 
 ## Running thor-magni-actions
 
-0. If you didn't run the previous preprocessing stage and want to use the data directly, run:
-   ```
-    unzip data/processed/thor_magni/QTM_frames_actions.zip -d data/processed/thor_magni/
-   ```
-1. To compute features, run:
+5. To compute features, run:
    ```
    python -m thor_magni_actions.features.build_features data/interim/thor_magni data/interim/thor_magni
    ```
-2. To create a dataset of fixed-length tracklets, run:
+6. To create a dataset of fixed-length tracklets, run:
     ```
     python -m thor_magni_actions.data.make_dataset thor_magni data/interim/thor_magni data/processed/thor_magni
     ```
-3. To run the k-fold cross validation:
+7. To run the k-fold cross validation:
     ```
     python -m thor_magni_actions.data_modeling.runners.k_fold_cv 5 thor_magni_actions/data_modeling/cfgs/mtl_tf.yaml
     ```

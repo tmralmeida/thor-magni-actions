@@ -72,13 +72,9 @@ conda env create -f environment.yml && conda activate thor-magni-actions && pip 
 
 ## Prepare THÖR-MAGNI dataset (via thor-magni-tools)
 
-0. If you want to skip all preprocessing steps run: 
-   ```
-    unzip data/processed/thor_magni/QTM_frames_actions.zip -d data/processed/thor_magni/
-   ```
-   And, jump to [running thor-magni-actions section](#running-thor-magni-actions) .
-2. Prepare [thor-magni-tools](https://github.com/tmralmeida/thor-magni-tools).
-3. Change [config file](https://github.com/tmralmeida/thor-magni-tools-new/blob/main/thor_magni_tools/preprocessing/cfg.yaml) to:
+0. Jump to [running thor-magni-actions modeling section](#running-thor-magni-actions-modeling) if you want to skip these preprocessing steps.
+1. Prepare [thor-magni-tools](https://github.com/tmralmeida/thor-magni-tools).
+2. Change [config file](https://github.com/tmralmeida/thor-magni-tools-new/blob/main/thor_magni_tools/preprocessing/cfg.yaml) to:
 ------------
     in_path: PATH_TO_CSVs/Scenario_{ID}
     out_path: PATH_TO/thor-magni-actions/data/external/thor_magni
@@ -98,21 +94,21 @@ Change the config `in_path` and `out_path` settings accordingly. In this way, we
 2. Check your `data/external` directory.
 3. To align actions and trajectory data, run for each preprocessed scenario directory:
     ```
-    python -m thor_magni_tools.run_actions_merging --actions_path data/processed/thor_magni/QTM_frames_actions.csv --files_dir outputs/data/thor_magni/Scenario_{ID}/ --out_path data/interim/thor_magni/
+    unzip data/processed/thor_magni/QTM_frames_actions.zip -d data/processed/thor_magni/ && python -m thor_magni_tools.run_actions_merging --actions_path data/processed/thor_magni/QTM_frames_actions.csv --files_dir outputs/data/thor_magni/Scenario_{ID}/ --out_path data/interim/thor_magni/
     ```
-4. To run the Scenario 2 and Scenario 3 merging, run [this notebook](https://github.com/tmralmeida/thor-magni-actions/blob/main/notebooks/2-merge-scenarios-data.ipynb).
-
-## Running thor-magni-actions
-
-5. To compute features, run:
+4. To compute features, run:
    ```
    python -m thor_magni_actions.features.build_features data/interim/thor_magni data/interim/thor_magni
    ```
-6. To create a dataset of fixed-length tracklets, run:
+5. To create a dataset of fixed-length tracklets, run:
     ```
     python -m thor_magni_actions.data.make_dataset thor_magni data/interim/thor_magni data/processed/thor_magni
     ```
-7. To run the k-fold cross validation:
+
+
+## Running thor-magni-actions modeling
+
+6. To run the k-fold cross validation with the multi-task learning approach:
     ```
     python -m thor_magni_actions.data_modeling.runners.k_fold_cv 5 thor_magni_actions/data_modeling/cfgs/mtl_tf.yaml
     ```

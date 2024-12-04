@@ -109,6 +109,6 @@ Change the config `in_path` and `out_path` settings accordingly. In this way, we
 ## Running thor-magni-actions modeling
 
 To run the k-fold cross validation with the multi-task learning approach:
-    ```
-    python -m thor_magni_actions.data_modeling.runners.k_fold_cv 5 thor_magni_actions/data_modeling/cfgs/mtl_tf.yaml
-    ```
+```
+python -m thor_magni_actions.data_modeling.runners.k_fold_cv 5 thor_magni_actions/data_modeling/cfgs/mtl_tf.yaml
+```

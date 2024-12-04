@@ -87,20 +87,20 @@ conda env create -f environment.yml && conda activate thor-magni-actions && pip 
 ------------
 Change the config `in_path` and `out_path` settings accordingly. In this way, we obtain smoother and more consistent trajectories.
 
-1. From `thor-magni-tools`, run for each scenario directory:
+3. From `thor-magni-tools`, run for each scenario directory:
    ```
    python -m thor_magni_tools.run_preprocessing
    ```
-2. Check your `data/external` directory.
-3. To align actions and trajectory data, run for each preprocessed scenario directory:
+4. Check your `data/external` directory.
+5. To align actions and trajectory data, run for each preprocessed scenario directory:
     ```
     unzip data/processed/thor_magni/QTM_frames_actions.zip -d data/processed/thor_magni/ && python -m thor_magni_tools.run_actions_merging --actions_path data/processed/thor_magni/QTM_frames_actions.csv --files_dir outputs/data/thor_magni/Scenario_{ID}/ --out_path data/interim/thor_magni/
     ```
-4. To compute features, run:
+6. To compute features, run:
    ```
    python -m thor_magni_actions.features.build_features data/interim/thor_magni data/interim/thor_magni
    ```
-5. To create a dataset of fixed-length tracklets, run:
+7. To create a dataset of fixed-length tracklets, run:
     ```
     python -m thor_magni_actions.data.make_dataset thor_magni data/interim/thor_magni data/processed/thor_magni
     ```
@@ -108,7 +108,7 @@ Change the config `in_path` and `out_path` settings accordingly. In this way, we
 
 ## Running thor-magni-actions modeling
 
-6. To run the k-fold cross validation with the multi-task learning approach:
+To run the k-fold cross validation with the multi-task learning approach:
     ```
     python -m thor_magni_actions.data_modeling.runners.k_fold_cv 5 thor_magni_actions/data_modeling/cfgs/mtl_tf.yaml
     ```

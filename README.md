@@ -85,14 +85,14 @@ conda env create -f environment.yml && conda activate thor-magni-actions && pip 
         resampling_rule: 400ms 
         average_window: 800ms 
 ------------
-Change the config `in_path` and `out_path` settings accordingly. In this way, we obtain smoother and more consistent trajectories.
+Change the config `in_path` and `out_path` settings accordingly. In this way, we obtain smoother and consistent trajectories.
 
-3. From `thor-magni-tools`, run for each scenario directory:
+1. From `thor-magni-tools`, run for each scenario directory:
    ```
    python -m thor_magni_tools.run_preprocessing
    ```
-4. Check your `data/external` directory.
-5. To align actions and trajectory data, run for each preprocessed scenario directory:
+2. Check your `data/external` directory.
+3. To align actions and trajectory data, run for each preprocessed scenario directory:
     ```
     unzip data/processed/thor_magni/QTM_frames_actions.zip -d data/processed/thor_magni/ && python -m thor_magni_tools.run_actions_merging --actions_path data/processed/thor_magni/QTM_frames_actions.csv --files_dir outputs/data/thor_magni/Scenario_{ID}/ --out_path data/interim/thor_magni/
     ```

@@ -2,8 +2,8 @@
 
 <p align="center">
   <a href="https://arxiv.org/abs/2412.13729"><strong><code>Paper</code></strong></a>
-  <a href="https://github.com/tmralmeida/thor-magni-tools/tree/main"><strong><code>Dataset</code></strong></a>
-  <a href="https://magni-dash.streamlit.app"><strong><code>Dataset Tools</code></strong></a>
+  <a href="https://github.com/tmralmeida/thor-magni-actions/tree/main/data/processed/thor_magni"><strong><code>Dataset</code></strong></a>
+  <a href="https://github.com/tmralmeida/thor-magni-tools"><strong><code>Dataset Tools</code></strong></a>
 </p>
 
 

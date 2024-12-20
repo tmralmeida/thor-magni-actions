@@ -7,6 +7,11 @@
 </p>
 
 
+<div align='center'>
+  <br><img src="doc/sample.gif" width=70%>
+  <br>THÖR-MAGNI Act provides actions aligned with motion capture data and gazes from egocentric videos.
+</div>
+
 Project Organization
 ------------
 

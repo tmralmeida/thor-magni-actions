@@ -1,4 +1,4 @@
-<h2 align="center">THÖR-MAGNI Act:&thinsp;A&thinsp;Actions&thinsp;for&thinsp;Human&thinsp;Motion&thinsp;Modeling&thinsp;in&thinsp;Robot-Shared&thinsp;Industrial&thinsp;Spaces</h2>
+<h2 align="center">THÖR-MAGNI Act:&thinsp;Actions&thinsp;for&thinsp;Human&thinsp;Motion&thinsp;Modeling&thinsp;in&thinsp;Robot-Shared&thinsp;Industrial&thinsp;Spaces</h2>
 
 <p align="center">
   <a href="https://arxiv.org/abs/2412.13729"><strong><code>Paper</code></strong></a>
@@ -71,7 +71,7 @@ Project Organization
 Install [miniconda](http://docs.conda.io/en/latest/miniconda.html). Then, you can install all packages required by running:
 
 ```
-conda env create -f environment.yml && conda activate thor-magni-actions && pip install -e
+conda env create -f environment.yml && conda activate thor-magni-actions && pip install -e .
 ```
 
 

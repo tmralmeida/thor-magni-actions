@@ -40,12 +40,12 @@ class Processor(ABC):
         for subdir_name, subdir in data.items():
             if isinstance(subdir, pd.DataFrame):
                 create_dir(dst_path)
-                subdir.to_csv(os.path.join(dst_path, subdir_name + ".csv"))
+                subdir.to_csv(os.path.join(dst_path, subdir_name + ".csv"), index=None)
                 continue
             for fn, data_to_save in subdir.items():
                 save_path = os.path.join(dst_path, subdir_name)
                 create_dir(save_path)
-                data_to_save.to_csv(os.path.join(save_path, fn))
+                data_to_save.to_csv(os.path.join(save_path, fn), index=None)
 
     def run(self, src_path, dst_path):
         # computing displacements, polar coordinates

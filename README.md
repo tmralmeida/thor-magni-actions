@@ -99,7 +99,7 @@ Change the config `in_path` and `out_path` settings accordingly. In this way, we
 2. Check your `data/external` directory.
 3. To align actions and trajectory data, run for each preprocessed scenario directory:
     ```
-    unzip data/processed/thor_magni/QTM_frames_actions.zip -d data/processed/thor_magni/ && python -m thor_magni_tools.run_actions_merging --actions_path data/processed/thor_magni/QTM_frames_actions.csv --files_dir outputs/data/thor_magni/Scenario_{ID}/ --out_path data/interim/thor_magni/
+    unzip data/processed/thor_magni/QTM_frames_actions.zip -d data/processed/thor_magni/ && python -m thor_magni_tools.run_actions_merging --actions_path data/processed/thor_magni/QTM_frames_actions.csv --files_dir data/external/thor_magni/Scenario_{ID}/ --out_path data/interim/thor_magni/
     ```
 6. To compute features, run:
    ```

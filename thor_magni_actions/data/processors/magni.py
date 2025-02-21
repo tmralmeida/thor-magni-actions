@@ -31,6 +31,7 @@ class MagniProcessor(Processor):
         self.traj_len = kwargs["traj_len"]
         self.skip_window = kwargs["skip_window"]
         self.min_pedestrians = kwargs["min_pedestrians"]
+        self.tracking_cols = None
 
     def get_scenario_namming(self, scenario_file_name: str) -> str:
         for k, v in SCENARIOS_MAP_NAME.items():
@@ -48,7 +49,7 @@ class MagniProcessor(Processor):
                 helmets_df[helmets_df["ag_id"] == agent_id]
             )
             for _, group in groups_of_continuous_tracking:
-                if group[["x", "y", "z"]].isna().any(axis=0).all():
+                if group[self.tracking_cols].isna().any(axis=0).all():
                     continue
                 num_tracklets = int(
                     math.ceil((len(group) - self.traj_len + 1) / self.traj_len)
@@ -66,7 +67,7 @@ class MagniProcessor(Processor):
 
     def get_groups_continuous_tracking(self, dynamic_agent_data: pd.DataFrame):
         """get groups of continuous tracking/no-tracking"""
-        mask = dynamic_agent_data[["x", "y", "z"]].isna().any(axis=1)
+        mask = dynamic_agent_data[self.tracking_cols].isna().any(axis=1)
         groups = (mask != mask.shift()).cumsum()
         groups_of_continuous_tracking = dynamic_agent_data.groupby(groups)
         return groups_of_continuous_tracking
@@ -94,9 +95,7 @@ class MagniProcessor(Processor):
                 # tolerance=None,
             )
             act_trajs_dfs.append(merged_df)
-        actions_trajs_merged = (
-            pd.concat(act_trajs_dfs).set_index("Time").sort_index()
-        )
+        actions_trajs_merged = pd.concat(act_trajs_dfs).set_index("Time").sort_index()
         return actions_trajs_merged
 
     def process_inputs(self, src_path: str) -> Dict:
@@ -115,13 +114,19 @@ class MagniProcessor(Processor):
                     continue
 
                 trajectories_df = pd.read_csv(fp)
-                humans_trajectories_df = trajectories_df[
+                if self.tracking_cols is None:
+                    self.tracking_cols = trajectories_df.columns[
+                        trajectories_df.columns.str.startswith(("x", "y", "z", "rot"))
+                    ]
+                    print("Tracking columns:", self.tracking_cols)
+                actions_trajs_merged = trajectories_df[
                     trajectories_df.ag_id.str.startswith("Helmet")
                 ]
-                actions_trajs_merged = self.merge_actions_trajectories(
-                    humans_trajectories_df=humans_trajectories_df,
-                    file_actions=file_actions,
-                )
+                if "action" not in actions_trajs_merged.columns:
+                    actions_trajs_merged = self.merge_actions_trajectories(
+                        humans_trajectories_df=actions_trajs_merged,
+                        file_actions=file_actions,
+                    )
                 helmets_df = actions_trajs_merged.copy()
                 helmets_df.loc[:, "dataset_name"] = scenario_id
                 helmets_df = helmets_df.rename({"data_label": "agent_type"}, axis=1)

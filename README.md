@@ -117,3 +117,24 @@ To run the k-fold cross validation with the multi-task learning approach:
 ```
 python -m thor_magni_actions.data_modeling.runners.k_fold_cv 5 thor_magni_actions/data_modeling/cfgs/mtl_tf.yaml
 ```
+
+
+# Reference
+
+Further details on the motivation and implementation of the THÖR-MAGNI *Act* dataset can be found in [the following paper](https://arxiv.org/abs/2412.13729):
+```
+@inproceedings{tmralmeida25,
+author = {Rodrigues de Almeida, Tiago and Schreiter, Tim and Rudenko, Andrey and Palmieri, Luigi and A. Stork, Johannes and J. Lilienthal, Achim},
+title = {THÖR-MAGNI Act: Actions for Human Motion Modeling in Robot-Shared Industrial Spaces},
+year = {2025},
+booktitle = {Proceedings of the 2025 ACM/IEEE International Conference on Human-Robot Interaction},
+numpages = {5},
+keywords = {human motion dataset, human motion modeling, human activity prediction},
+location = {Melbourne, Australia},
+series = {HRI '25}
+}
+```
+
+# Contact
+
+The ``thor-magni-tools`` package has been developed by Tiago Rodrigues de Almeida [tiago.almeida@oru.se](tiago.almeida@oru.se).

@@ -1,7 +1,7 @@
 <h2 align="center">THÖR-MAGNI Act:&thinsp;Actions&thinsp;for&thinsp;Human&thinsp;Motion&thinsp;Modeling&thinsp;in&thinsp;Robot-Shared&thinsp;Industrial&thinsp;Spaces</h2>
 
 <p align="center">
-  <a href="https://arxiv.org/abs/2412.13729"><strong><code>Paper</code></strong></a>
+  <a href="https://dl.acm.org/doi/10.5555/3721488.3721626"><strong><code>Paper</code></strong></a>
   <a href="https://github.com/tmralmeida/thor-magni-actions/tree/main/data/processed/thor_magni"><strong><code>Dataset</code></strong></a>
   <a href="https://github.com/tmralmeida/thor-magni-tools"><strong><code>Dataset Tools</code></strong></a>
 </p>
@@ -121,15 +121,17 @@ python -m thor_magni_actions.data_modeling.runners.k_fold_cv 5 thor_magni_action
 
 # Reference
 
-Further details on the motivation and implementation of the THÖR-MAGNI *Act* dataset can be found in [the following paper](https://arxiv.org/abs/2412.13729):
+Further details on the motivation and implementation of the THÖR-MAGNI *Act* dataset can be found in [the following paper](https://dl.acm.org/doi/10.5555/3721488.3721626):
 ```
-@inproceedings{tmralmeida25,
-author = {Rodrigues de Almeida, Tiago and Schreiter, Tim and Rudenko, Andrey and Palmieri, Luigi and A. Stork, Johannes and J. Lilienthal, Achim},
-title = {THÖR-MAGNI Act: Actions for Human Motion Modeling in Robot-Shared Industrial Spaces},
+@inproceedings{10.5555/3721488.3721626,
+author = {Rodrigues de Almeida, Tiago and Schreiter, Tim and Rudenko, Andrey and Palmieri, Luigi and Stork, Johannes A. and Lilienthal, Achim J.},
+title = {TH\"{O}R-MAGNI Act: Actions for Human Motion Modeling in Robot-Shared Industrial Spaces},
 year = {2025},
+publisher = {IEEE Press},
 booktitle = {Proceedings of the 2025 ACM/IEEE International Conference on Human-Robot Interaction},
+pages = {1083–1087},
 numpages = {5},
-keywords = {human motion dataset, human motion modeling, human activity prediction},
+keywords = {human activity prediction, human motion dataset, human motion modeling},
 location = {Melbourne, Australia},
 series = {HRI '25}
 }
